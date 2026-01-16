@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KidsHealthyMe - สนุกไปกับสุขภาพที่ดี!</title>
+    <!-- ป้องกัน 404 favicon โดยการใช้ Data URI แบบว่าง -->
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
@@ -13,7 +15,6 @@
             margin: 0;
             padding: 0;
             min-height: 100vh;
-            /* พื้นหลังหลักของทุกหน้า */
             background-image: linear-gradient(rgba(240, 249, 255, 0.4), rgba(240, 249, 255, 0.4)), url('https://img5.pic.in.th/file/secure-sv1/Copilot_20260111_125933.png');
             background-size: cover;
             background-position: center;
@@ -40,12 +41,10 @@
         .animate-shimmer {
             animation: shimmer 2s linear infinite;
         }
-        /* SweetAlert Custom Font */
         .swal2-popup {
             font-family: 'Prompt', sans-serif !important;
             border-radius: 2rem !important;
         }
-        /* Custom Scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
         }
@@ -74,10 +73,10 @@
   }
 }
 </script>
-<link rel="stylesheet" href="/index.css">
 </head>
 <body>
     <div id="root"></div>
-<script type="module" src="/index.tsx"></script>
+    <!-- โหลด entry point โดยใช้ Relative Path เพื่อรองรับ GitHub Pages -->
+    <script type="module" src="./index.tsx"></script>
 </body>
 </html>
