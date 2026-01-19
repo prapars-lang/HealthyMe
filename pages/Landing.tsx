@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Layout, Heart, Shield, GraduationCap, ArrowRight, Star, Sparkles } from 'lucide-react';
 
@@ -51,11 +51,8 @@ const Landing: React.FC = () => {
           <Sparkles className="text-yellow-400" size={18} />
           <span className="text-blue-600 font-bold text-sm">ยินดีต้อนรับสู่ KidsHealthyMe</span>
         </div>
-        <h1 className="text-4xl md:text-5xl font-black text-slate-800 tracking-tight leading-tight">
-          สุขภาพที่ดี <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500">
-            เริ่มต้นที่ความสนุก!
-          </span>
+        <h1 className="text-3xl md:text-5xl font-black text-slate-800 tracking-tight leading-tight px-4">
+          สุขภาพที่ดี <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500">เริ่มต้นที่ความสนุก!</span>
         </h1>
         <p className="text-slate-500 text-base md:text-lg max-w-2xl mx-auto font-medium">
           แพลตฟอร์มสะสมแต้มสุขภาพสำหรับเด็กประถม ที่จะเปลี่ยนการกินผักและออกกำลังกายให้เป็นภารกิจสุดท้าทาย
