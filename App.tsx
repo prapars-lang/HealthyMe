@@ -92,13 +92,18 @@ const App: React.FC = () => {
             </Routes>
           </main>
           
-          <footer className="bg-white/40 backdrop-blur-md p-10 text-center text-[11px] text-slate-400 mt-auto border-t border-white/20">
-            <div className="flex justify-center gap-8 mb-6 opacity-60 grayscale hover:grayscale-0 transition-all">
-              <span className="bg-blue-100 text-blue-600 px-4 py-1.5 rounded-full font-black">#AI_EDUTECH</span>
-              <span className="bg-pink-100 text-pink-600 px-4 py-1.5 rounded-full font-black">#WELLBEING</span>
-              <span className="bg-emerald-100 text-emerald-600 px-4 py-1.5 rounded-full font-black">#RESEARCH</span>
+          <footer className="bg-white/60 backdrop-blur-md h-[60px] flex items-center justify-center px-4 text-[9px] md:text-[11px] text-slate-500 mt-auto border-t border-white/20 overflow-hidden shrink-0">
+            <div className="flex items-center gap-3 md:gap-6 whitespace-nowrap">
+              <div className="hidden sm:flex items-center gap-2 opacity-60 font-black">
+                <span className="text-blue-600">#AI_EDUTECH</span>
+                <span className="text-pink-600">#WELLBEING</span>
+                <span className="text-emerald-600">#RESEARCH</span>
+              </div>
+              <div className="hidden sm:block h-3 w-[1px] bg-slate-300"></div>
+              <p className="font-black tracking-tight uppercase leading-none">
+                KidsHealthyMe v1.5 | HealthyMe : นวัตกรรมเกมสุขภาพเพื่อเสริมสร้างความรอบรู้และปรับเปลี่ยนพฤติกรรมสุขภาพที่พึงประสงค์ของนักเรียนวัยเรียน
+              </p>
             </div>
-            <p className="font-black tracking-[0.3em] uppercase">KidsHealthyMe v1.5 | Designed for Science & Happiness</p>
           </footer>
         </div>
       </div>
