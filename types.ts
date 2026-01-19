@@ -47,6 +47,16 @@ export interface AvatarData {
   base_emoji: string;
 }
 
+// Board Game Types
+export interface BoardTile {
+  id: number;
+  type: 'quiz' | 'bonus' | 'risk' | 'start' | 'mission';
+  label: string;
+  icon: string;
+  color: string;
+  description: string;
+}
+
 export interface Card {
   id: string;
   title: string;
@@ -119,7 +129,6 @@ export interface SocialAction {
   created_at: string;
 }
 
-// Added missing DailyQuest interface to fix import error in constants.ts
 export interface DailyQuest {
   id: string;
   title: string;

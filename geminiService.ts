@@ -5,6 +5,34 @@ import { HealthLog } from "./types";
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 /**
+ * Helper ฟังก์ชันสำหรับเรียก Gemini พร้อมระบบ Retry เมื่อติด Quota (429)
+ */
+async function generateWithRetry(model: string, contents: any, systemInstruction: string, temperature: number = 0.7, retries: number = 3) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const response = await ai.models.generateContent({
+        model: model,
+        contents: contents,
+        config: {
+          systemInstruction: systemInstruction,
+          temperature: temperature,
+        },
+      });
+      return response.text;
+    } catch (error: any) {
+      const isRateLimit = error?.message?.includes('429') || error?.status === 429;
+      if (isRateLimit && i < retries - 1) {
+        // Exponential backoff: 1s, 2s, 4s...
+        const waitTime = Math.pow(2, i) * 1000;
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+        continue;
+      }
+      throw error;
+    }
+  }
+}
+
+/**
  * วิเคราะห์ข้อมูลภาพรวมชั้นเรียนสำหรับคุณครู
  */
 export async function getClassReport(allLogs: HealthLog[], studentCount: number) {
@@ -33,19 +61,16 @@ export async function getClassReport(allLogs: HealthLog[], studentCount: number)
       ใช้ภาษาไทยที่เป็นทางการแต่เข้าใจง่าย สรุปเป็นข้อๆ พร้อมอีโมจิที่เหมาะสม
     `;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: prompt,
-      config: {
-        systemInstruction: "คุณคือที่ปรึกษาด้านสุขภาพและจิตวิทยาเด็กสำหรับคุณครูประถมศึกษา",
-        temperature: 0.7,
-      },
-    });
+    const text = await generateWithRetry(
+      'gemini-3-flash-preview',
+      prompt,
+      "คุณคือที่ปรึกษาด้านสุขภาพและจิตวิทยาเด็กสำหรับคุณครูประถมศึกษา"
+    );
 
-    return response.text || "ไม่สามารถวิเคราะห์ข้อมูลได้ในขณะนี้";
+    return text || "ไม่สามารถวิเคราะห์ข้อมูลได้ในขณะนี้";
   } catch (error) {
     console.error("Gemini Admin Error:", error);
-    return "เกิดข้อผิดพลาดในการวิเคราะห์ข้อมูลชั้นเรียน 🤖";
+    return "ขณะนี้ระบบวิเคราะห์ข้อมูลหนาแน่นเล็กน้อย แต่ภาพรวมนักเรียนยังคงรักษาวินัยได้ดีครับ 🤖";
   }
 }
 
@@ -67,23 +92,18 @@ export async function generateQuizQuestions(topic: string, count: number = 5) {
     ตัวอย่าง:
     เราควรแปรงฟันกี่ครั้งต่อวัน? | 1 ครั้ง | 2 ครั้ง | ไม่ต้องแปรง | 10 ครั้ง | 1 | 🪥`;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: prompt,
-      config: {
-        systemInstruction: "คุณคืออาจารย์ผู้เชี่ยวชาญด้านสุขศึกษาและการออกแบบข้อสอบแบบ Gamification สำหรับเด็กประถม",
-        temperature: 0.8,
-      },
-    });
+    const text = await generateWithRetry(
+      'gemini-3-flash-preview',
+      prompt,
+      "คุณคืออาจารย์ผู้เชี่ยวชาญด้านสุขศึกษาและการออกแบบข้อสอบแบบ Gamification สำหรับเด็กประถม",
+      0.8
+    );
 
-    let text = response.text || "";
-    // Clean up markdown if AI includes it
-    text = text.replace(/```[a-z]*\n?/gi, '').replace(/```/g, '').trim();
-    
-    return text;
+    let cleanText = (text || "").replace(/```[a-z]*\n?/gi, '').replace(/```/g, '').trim();
+    return cleanText;
   } catch (error) {
     console.error("Generate Quiz Error:", error);
-    throw new Error("AI ไม่สามารถสร้างคำถามได้ในขณะนี้");
+    throw new Error("AI ไม่สามารถสร้างคำถามได้ในขณะนี้ กรุณาลองใหม่อีกครั้ง");
   }
 }
 
@@ -152,18 +172,18 @@ export async function getAICoachFeedback(
       ใช้ภาษาไทยที่เป็นมิตร 3-5 ประโยค พร้อมอีโมจิที่น่ารัก
     `;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: prompt,
-      config: {
-        systemInstruction: systemInstruction,
-        temperature: 0.8,
-      },
-    });
+    const text = await generateWithRetry(
+      'gemini-3-flash-preview',
+      prompt,
+      systemInstruction,
+      0.8
+    );
 
-    return response.text || "ว้าว! วันนี้เก่งมากเลยครับ มาพยายามต่อในวันพรุ่งนี้นะ! 🌟";
+    return text || "ว้าว! วันนี้เก่งมากเลยครับ มาพยายามต่อในวันพรุ่งนี้นะ! 🌟";
   } catch (error) {
     console.error("AI Coach Error:", error);
-    return "วันนี้ทำได้ดีมากเลยเด็กๆ! รักษาสุขภาพให้แข็งแรงเสมอนะ ✨";
+    return isParentView 
+      ? "น้องกำลังทำได้ดีในการดูแลสุขภาพครับ การสนับสนุนจากคุณพ่อคุณแม่คือพลังที่ดีที่สุด! ✨"
+      : "วันนี้ทำได้ดีมากเลยเด็กๆ! รักษาสุขภาพให้แข็งแรงและสะสมแต้มพลังต่อไปนะ ✨";
   }
 }

@@ -9,7 +9,10 @@ import StudentHome from './pages/StudentHome';
 import ParentHome from './pages/ParentHome';
 import AdminDashboard from './pages/AdminDashboard';
 import CardCollection from './pages/CardCollection';
+import HealthBoardGame from './pages/HealthBoardGame';
 import Shop from './pages/Shop';
+import Inventory from './pages/Inventory';
+import Friends from './pages/Friends';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 
@@ -80,8 +83,23 @@ const App: React.FC = () => {
               />
 
               <Route 
+                path="/game" 
+                element={user ? <HealthBoardGame user={user} /> : <Navigate to="/login" />} 
+              />
+
+              <Route 
                 path="/shop" 
                 element={user ? <Shop user={user} /> : <Navigate to="/login" />} 
+              />
+
+              <Route 
+                path="/inventory" 
+                element={user ? <Inventory user={user} /> : <Navigate to="/login" />} 
+              />
+
+              <Route 
+                path="/friends" 
+                element={user ? <Friends user={user} /> : <Navigate to="/login" />} 
               />
               
               <Route 
