@@ -51,13 +51,13 @@ const Landing: React.FC = () => {
           <Sparkles className="text-yellow-400" size={18} />
           <span className="text-blue-600 font-bold text-sm">ยินดีต้อนรับสู่ KidsHealthyMe</span>
         </div>
-        <h1 className="text-5xl md:text-7xl font-black text-slate-800 tracking-tight leading-tight">
+        <h1 className="text-4xl md:text-5xl font-black text-slate-800 tracking-tight leading-tight">
           สุขภาพที่ดี <br />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500">
             เริ่มต้นที่ความสนุก!
           </span>
         </h1>
-        <p className="text-slate-500 text-lg md:text-xl max-w-2xl mx-auto font-medium">
+        <p className="text-slate-500 text-base md:text-lg max-w-2xl mx-auto font-medium">
           แพลตฟอร์มสะสมแต้มสุขภาพสำหรับเด็กประถม ที่จะเปลี่ยนการกินผักและออกกำลังกายให้เป็นภารกิจสุดท้าทาย
         </p>
       </section>
@@ -111,7 +111,7 @@ const Landing: React.FC = () => {
       <div className="relative h-48 rounded-[3rem] overflow-hidden shadow-xl">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 opacity-90"></div>
         <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-6 text-center">
-          <h2 className="text-3xl font-black mb-4">พร้อมจะสร้างสุขภาพที่ดีหรือยัง?</h2>
+          <h2 className="text-2xl font-black mb-4">พร้อมจะสร้างสุขภาพที่ดีหรือยัง?</h2>
           <button onClick={() => navigate('/register')} className="bg-white text-blue-600 px-8 py-3 rounded-full font-black shadow-lg hover:bg-blue-50 transition-colors">
             สมัครสมาชิกฮีโร่ใหม่ ✨
           </button>
