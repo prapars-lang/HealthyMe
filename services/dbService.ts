@@ -3,13 +3,13 @@ import { initializeApp } from "firebase/app";
 import { 
   getFirestore, collection, doc, setDoc, getDoc, getDocs, 
   query, where, updateDoc, increment, orderBy, limit, addDoc, 
-  Timestamp, deleteDoc
+  Timestamp, deleteDoc, writeBatch
 } from "firebase/firestore";
 import { 
   getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, 
   signOut 
 } from "firebase/auth";
-import { User, HealthLog, AvatarData, UserRole, ShopReward, RedemptionRecord, Card, UserCard } from '../types';
+import { User, HealthLog, AvatarData, UserRole, ShopReward, RedemptionRecord, Card, UserCard, Item, UserItem, Friend, SocialAction } from '../types';
 import { INITIAL_AVATAR, HEALTH_QUESTIONS } from '../constants';
 
 const firebaseConfig = {
@@ -51,6 +51,12 @@ export const dbService = {
   },
 
   logout: async () => { await signOut(auth); },
+
+  // Users
+  getAllUsers: async (): Promise<User[]> => {
+    const snap = await getDocs(collection(db, "users"));
+    return snap.docs.map(d => d.data() as User);
+  },
 
   // Stats
   getAvatar: async (userId: string): Promise<AvatarData> => {
@@ -111,6 +117,82 @@ export const dbService = {
     return { success: true, card: randomCard };
   },
 
+  // Friends & Social
+  getFriends: async (userId: string): Promise<Friend[]> => {
+    const q = query(collection(db, "friends"), where("user_id", "==", userId));
+    const snap = await getDocs(q);
+    return snap.docs.map(d => ({ id: d.id, ...d.data() } as Friend));
+  },
+
+  addFriend: async (userId: string, friendId: string) => {
+    const existing = await getDocs(query(collection(db, "friends"), 
+      where("user_id", "==", userId), 
+      where("friend_id", "==", friendId)
+    ));
+    if (!existing.empty) return { success: false, message: 'เป็นเพื่อนกันอยู่แล้ว' };
+    
+    await addDoc(collection(db, "friends"), {
+      user_id: userId,
+      friend_id: friendId,
+      created_at: new Date().toISOString()
+    });
+    return { success: true };
+  },
+
+  sendSocialAction: async (action: Omit<SocialAction, 'id' | 'created_at' | 'is_read'>) => {
+    await addDoc(collection(db, "social_actions"), {
+      ...action,
+      is_read: false,
+      created_at: new Date().toISOString()
+    });
+    return { success: true };
+  },
+
+  getSocialActions: async (userId: string): Promise<SocialAction[]> => {
+    if (!userId) return [];
+    try {
+      // ใช้เฉพาะ filter พื้นฐาน เพื่อเลี่ยง Index Error อย่างเด็ดขาด
+      const q = query(
+        collection(db, "social_actions"), 
+        where("to_user_id", "==", userId)
+      );
+      const snap = await getDocs(q);
+      const actions = snap.docs.map(d => ({ id: d.id, ...d.data() } as SocialAction));
+      
+      // เรียงลำดับฝั่ง Client เพื่อความปลอดภัย
+      return actions
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .slice(0, 30);
+    } catch (e) {
+      console.error("Critical Sidebar Error - Social Actions:", e);
+      return [];
+    }
+  },
+
+  markSocialActionsRead: async (userId: string) => {
+    if (!userId) return { success: false };
+    try {
+      const q = query(
+        collection(db, "social_actions"), 
+        where("to_user_id", "==", userId)
+      );
+      const snap = await getDocs(q);
+      const unreadDocs = snap.docs.filter(d => d.data().is_read === false);
+      
+      if (unreadDocs.length === 0) return { success: true };
+      
+      const batch = writeBatch(db);
+      unreadDocs.forEach(d => {
+        batch.update(d.ref, { is_read: true });
+      });
+      await batch.commit();
+      return { success: true };
+    } catch (e) {
+      console.error("Mark Read Error:", e);
+      return { success: false };
+    }
+  },
+
   // Shop & Rewards (Admin & Student)
   getShopRewards: async () => {
     const snap = await getDocs(collection(db, "shop_rewards"));
@@ -135,7 +217,7 @@ export const dbService = {
   redeemReward: async (userId: string, reward: ShopReward) => {
     const avatarRef = doc(db, "avatars", userId);
     const snap = await getDoc(avatarRef);
-    if (snap.data().coin < reward.cost) return { success: false, message: 'เหรียญไม่พอ' };
+    if (!snap.exists() || snap.data().coin < reward.cost) return { success: false, message: 'เหรียญไม่พอ' };
 
     await updateDoc(avatarRef, { coin: increment(-reward.cost) });
     const code = Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -166,6 +248,19 @@ export const dbService = {
     return { success: true };
   },
 
+  // Items & Inventory
+  getUserItems: async (userId: string): Promise<UserItem[]> => {
+    const q = query(collection(db, "user_items"), where("user_id", "==", userId));
+    const snap = await getDocs(q);
+    return snap.docs.map(d => ({ id: d.id, ...d.data() } as UserItem));
+  },
+
+  equipItem: async (userId: string, itemId: string) => {
+    const avatarRef = doc(db, "avatars", userId);
+    await updateDoc(avatarRef, { equipped_item_id: itemId });
+    return { success: true };
+  },
+
   // Others
   getBoxLogs: async (userId: string): Promise<any[]> => {
     const q = query(collection(db, "box_logs"), where("user_id", "==", userId));
@@ -174,19 +269,29 @@ export const dbService = {
     return logs.sort((a, b) => new Date(b.opened_at).getTime() - new Date(a.opened_at).getTime());
   },
 
-  openMysteryBox: async (userId: string, itemName: string) => {
+  openMysteryBox: async (userId: string, itemId: string) => {
     const avatarRef = doc(db, "avatars", userId);
     const snap = await getDoc(avatarRef);
-    if (snap.data().coin < 20) return { success: false, message: 'เหรียญไม่พอ' };
+    if (!snap.exists() || snap.data().coin < 20) return { success: false, message: 'เหรียญไม่พอ' };
+    
     await updateDoc(avatarRef, { coin: increment(-20) });
+    
     await addDoc(collection(db, "box_logs"), {
-      user_id: userId, item_name: itemName, opened_at: new Date().toISOString()
+      user_id: userId, item_id: itemId, opened_at: new Date().toISOString()
     });
+    
+    await addDoc(collection(db, "user_items"), {
+      user_id: userId,
+      item_id: itemId,
+      is_equipped: false,
+      acquired_at: new Date().toISOString()
+    });
+    
     return { success: true };
   },
 
   getLeaderboard: async (className?: string): Promise<any[]> => {
-    const q = query(collection(db, "avatars"), orderBy("level", "desc"), limit(20));
+    const q = query(collection(db, "avatars"), orderBy("level", "desc"), limit(30));
     const snap = await getDocs(q);
     const results = await Promise.all(snap.docs.map(async (d) => {
       const uDoc = await getDoc(doc(db, "users", d.data().user_id));
@@ -202,7 +307,7 @@ export const dbService = {
   },
 
   checkConnection: async () => {
-    try { await getDocs(query(collection(db, "cards"), limit(1))); return true; } catch (e) { return false; }
+    try { await getDocs(query(collection(db, "users"), limit(1))); return true; } catch (e) { return false; }
   },
 
   setupDatabase: async () => {
