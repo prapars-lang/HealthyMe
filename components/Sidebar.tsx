@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   Home, ShoppingBag, Briefcase, BookOpen, Brain, 
@@ -8,6 +8,7 @@ import {
   Database, ChevronRight, User as UserIcon
 } from 'lucide-react';
 import { User, UserRole } from '../types';
+import { dbService } from '../services/dbService';
 
 interface SidebarProps {
   user: User;
@@ -17,10 +18,28 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ user, viewMode, onLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const location = useLocation();
 
   const isAdmin = user.role === UserRole.ADMIN;
   const isParent = viewMode === 'parent';
+
+  useEffect(() => {
+    if (user && !isAdmin) {
+      const checkSocial = async () => {
+        try {
+          const actions = await dbService.getSocialActions(user.id);
+          const count = actions.filter(a => !a.is_read).length;
+          setUnreadCount(count);
+        } catch (e) {
+          console.error("Sidebar notification error", e);
+        }
+      };
+      checkSocial();
+      const interval = setInterval(checkSocial, 30000); // Check every 30s
+      return () => clearInterval(interval);
+    }
+  }, [user, isAdmin]);
 
   const menuItems = {
     student: [
@@ -28,12 +47,13 @@ const Sidebar: React.FC<SidebarProps> = ({ user, viewMode, onLogout }) => {
       { path: '/cards', label: 'สมุดสะสมการ์ด', icon: <Layers size={22} />, color: 'text-purple-500' },
       { path: '/shop', label: 'ร้านค้าฮีโร่', icon: <ShoppingBag size={22} />, color: 'text-amber-500' },
       { path: '/inventory', label: 'ไอเทมของฉัน', icon: <Briefcase size={22} />, color: 'text-indigo-500' },
-      { path: '/friends', label: 'เพื่อนร่วมทาง', icon: <Users size={22} />, color: 'text-emerald-500' },
+      { path: '/friends', label: 'เพื่อนร่วมทาง', icon: <Users size={22} />, color: 'text-emerald-500', badge: unreadCount },
     ],
     parent: [
       { path: '/home', label: 'กราฟสุขภาพ', icon: <LayoutDashboard size={22} />, color: 'text-pink-500' },
       { path: '/reports', label: 'ประวัติย้อนหลัง', icon: <FileText size={22} />, color: 'text-rose-500' },
       { path: '/ai-coach', label: 'ปรึกษา AI', icon: <Heart size={22} />, color: 'text-pink-600' },
+      { path: '/friends', label: 'เพื่อนของลูก', icon: <Users size={22} />, color: 'text-emerald-500' },
     ],
     admin: [
       { path: '/admin', label: 'ภาพรวมวิจัย', icon: <Activity size={22} />, color: 'text-emerald-500' },
@@ -63,8 +83,13 @@ const Sidebar: React.FC<SidebarProps> = ({ user, viewMode, onLogout }) => {
             : 'text-slate-400 hover:bg-white/90 hover:text-slate-800'
         }`}
       >
-        <div className={`${isActive ? 'text-white' : item.color} group-hover:scale-110 transition-transform flex-shrink-0`}>
+        <div className={`${isActive ? 'text-white' : item.color} group-hover:scale-110 transition-transform flex-shrink-0 relative`}>
           {item.icon}
+          {item.badge > 0 && !isActive && (
+            <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white text-[8px] font-black rounded-full flex items-center justify-center border-2 border-white animate-bounce">
+              {item.badge}
+            </span>
+          )}
         </div>
 
         {isMobile && (
