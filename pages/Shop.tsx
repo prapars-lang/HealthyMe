@@ -41,6 +41,7 @@ const Shop: React.FC<ShopProps> = ({ user }) => {
       return;
     }
 
+    // Fix: Remove borderRadius property as it is not supported in SweetAlertOptions
     const result = await Swal.fire({
       title: 'ยืนยันการแลกรางวัล?',
       text: `ใช้ ${reward.cost} เหรียญ เพื่อแลก ${reward.title}`,
@@ -49,18 +50,17 @@ const Shop: React.FC<ShopProps> = ({ user }) => {
       confirmButtonText: 'ยืนยันเลย!',
       cancelButtonText: 'เอาไว้ก่อน',
       confirmButtonColor: '#f59e0b',
-      borderRadius: '2rem'
     });
 
     if (result.isConfirmed) {
       try {
         const res = await dbService.redeemReward(user.id, reward);
         if (res.success) {
+          // Fix: Remove borderRadius property as it is not supported in SweetAlertOptions
           await Swal.fire({
             title: 'แลกรางวัลสำเร็จ!',
             text: 'รับรหัสรางวัลได้ที่หน้า "ประวัติการแลก" แล้วนำไปแจ้งคุณครูได้เลย',
             icon: 'success',
-            borderRadius: '2rem'
           });
           loadData();
           setActiveTab('history');

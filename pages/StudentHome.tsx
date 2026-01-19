@@ -5,7 +5,7 @@ import { User, AvatarData, HealthLog } from '../types';
 import { dbService } from '../services/dbService';
 import { getAICoachFeedback } from '../geminiService';
 import { ITEMS_SHOP, EMOJI_POOL } from '../constants';
-import { Coins, Plus, Box as BoxIcon, CheckCircle, Brain, Briefcase, ShoppingCart, Sparkles, X, RefreshCw, Lock, Clock, Heart, Activity, Layers, Flame, Edit3 } from 'lucide-react';
+import { Coins, Plus, Box as BoxIcon, CheckCircle, Brain, Briefcase, ShoppingCart, Sparkles, X, RefreshCw, Lock, Clock, Heart, Activity, Layers, Flame, Edit3, Dice6 } from 'lucide-react';
 import HealthLogForm from '../components/HealthLogForm';
 import HealthQuiz from '../components/MiniGame';
 import Leaderboard from '../components/Leaderboard';
@@ -43,13 +43,17 @@ const StudentHome: React.FC<StudentHomeProps> = ({ user }) => {
       setIsAlreadyLogged(myLogs.some((l: any) => l.date?.startsWith(todayStr)));
 
       if (boxLogs.length > 0) {
-        const lastOpen = new Date(boxLogs[0].opened_at);
+        // เรียงลำดับเพื่อให้ได้อันล่าสุด (เผื่อ Firestore ไม่เรียงมาให้)
+        const sortedBoxLogs = [...boxLogs].sort((a, b) => new Date(b.opened_at).getTime() - new Date(a.opened_at).getTime());
+        const lastOpen = new Date(sortedBoxLogs[0].opened_at);
         const now = new Date();
         const diffTime = now.getTime() - lastOpen.getTime();
         const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-        if (diffDays < 7) {
+        
+        // เปลี่ยนจาก 7 วัน เป็น 1 วัน
+        if (diffDays < 1) {
           setIsBoxLocked(true);
-          setDaysUntilNextBox(7 - diffDays);
+          setDaysUntilNextBox(1 - diffDays);
         } else {
           setIsBoxLocked(false);
         }
@@ -117,7 +121,9 @@ const StudentHome: React.FC<StudentHomeProps> = ({ user }) => {
               </div>
             </div>
             <div className="flex items-center gap-3 bg-orange-50 px-4 py-2 rounded-2xl border border-orange-100 self-center md:self-start shadow-sm">
-              <Flame size={20} className="text-orange-500 animate-pulse" />
+              <div className="flex flex-col items-center">
+                <Flame size={20} className="text-orange-500 animate-pulse" />
+              </div>
               <div>
                 <p className="text-[8px] font-black text-orange-400 uppercase leading-none">Streak</p>
                 <p className="text-xl font-black text-orange-600 leading-tight">{avatar?.streak_count || 0} Days</p>
@@ -148,9 +154,13 @@ const StudentHome: React.FC<StudentHomeProps> = ({ user }) => {
           <div className="p-4 bg-white/20 rounded-2xl">{isAlreadyLogged ? <CheckCircle size={32} /> : <Plus size={32} />}</div>
           <span className="font-black text-xs uppercase">{isAlreadyLogged ? 'บันทึกแล้ว' : 'บันทึกสุขภาพ'}</span>
         </button>
+        <button onClick={() => navigate('/game')} className="bg-indigo-600 p-6 rounded-[2.5rem] shadow-xl border-4 border-white flex flex-col items-center gap-2 text-white shadow-indigo-200 active:scale-95 transition-all">
+          <div className="p-4 bg-white/20 rounded-2xl"><Dice6 size={32} /></div>
+          <span className="font-black text-xs uppercase">เศรษฐีสุขภาพ</span>
+        </button>
         <button onClick={() => navigate('/cards')} className="bg-purple-600 p-6 rounded-[2.5rem] shadow-xl border-4 border-white flex flex-col items-center gap-2 text-white shadow-purple-200 active:scale-95 transition-all">
           <div className="p-4 bg-white/20 rounded-2xl"><Layers size={32} /></div>
-          <span className="font-black text-xs uppercase">สมุดสะสมการ์ด</span>
+          <span className="font-black text-xs uppercase">สมุดการ์ด</span>
         </button>
         <button onClick={() => setShowGame(true)} className="bg-rose-500 p-6 rounded-[2.5rem] shadow-xl border-4 border-white flex flex-col items-center gap-2 text-white shadow-rose-200 active:scale-95 transition-all">
           <div className="p-4 bg-white/20 rounded-2xl"><Brain size={32} /></div>
@@ -158,7 +168,7 @@ const StudentHome: React.FC<StudentHomeProps> = ({ user }) => {
         </button>
         <button onClick={() => setShowBox(true)} className={`${isBoxLocked ? 'bg-slate-300' : 'bg-orange-500 shadow-orange-200 shadow-xl'} p-6 rounded-[2.5rem] border-4 border-white flex flex-col items-center gap-2 text-white active:scale-95 transition-all`}>
           <div className="p-4 bg-white/20 rounded-2xl relative"><BoxIcon size={32} />{isBoxLocked && <Lock className="absolute top-0 right-0 text-slate-800" size={16}/>}</div>
-          <span className="font-black text-[10px] uppercase">{isBoxLocked ? `อีก ${daysUntilNextBox} วัน` : 'Mystery Box'}</span>
+          <span className="font-black text-[10px] uppercase">{isBoxLocked ? `พรุ่งนี้มาใหม่นะ` : 'Mystery Box'}</span>
         </button>
       </div>
 
@@ -195,7 +205,7 @@ const StudentHome: React.FC<StudentHomeProps> = ({ user }) => {
               {isBoxLocked ? (
                 <div className="space-y-4 py-6">
                    <Clock className="w-16 h-16 text-slate-300 mx-auto" />
-                   <p className="font-black text-slate-500 text-sm">ฮีโร่สามารถเปิดกล่องสมบัติได้ 1 ครั้งต่อสัปดาห์เท่านั้น <br/> อีก <strong>{daysUntilNextBox} วัน</strong> มาลองใหม่นะ!</p>
+                   <p className="font-black text-slate-500 text-sm">ฮีโร่สามารถเปิดกล่องสมบัติได้ 1 ครั้งต่อวันเท่านั้น <br/> พรุ่งนี้ค่อยกลับมาลองใหม่นะ!</p>
                 </div>
               ) : !wonItem ? (
                 <div className="space-y-6 w-full py-6">
