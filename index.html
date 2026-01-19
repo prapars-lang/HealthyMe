@@ -5,8 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KidsHealthyMe - สนุกไปกับสุขภาพที่ดี!</title>
-    <!-- ป้องกัน 404 favicon โดยการใช้ Data URI แบบว่าง -->
-    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
@@ -20,13 +18,27 @@
             background-position: center;
             background-attachment: fixed;
             background-repeat: no-repeat;
+            overflow-x: hidden;
         }
         #root {
             min-height: 100vh;
         }
-        .canvas-game {
-            image-rendering: pixelated;
+        
+        /* Custom Scrollbar for Sidebar and content */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
         }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #cbd5e1;
+        }
+
         @keyframes wiggle {
             0%, 100% { transform: rotate(-3deg); }
             50% { transform: rotate(3deg); }
@@ -45,19 +57,6 @@
             font-family: 'Prompt', sans-serif !important;
             border-radius: 2rem !important;
         }
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
     </style>
 <script type="importmap">
 {
@@ -69,14 +68,18 @@
     "react-router-dom": "https://esm.sh/react-router-dom@^7.11.0",
     "recharts": "https://esm.sh/recharts@^3.6.0",
     "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
-    "sweetalert2": "https://esm.sh/sweetalert2@11.10.0"
+    "sweetalert2": "https://esm.sh/sweetalert2@11.10.0",
+    "firebase/app": "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js",
+    "firebase/auth": "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js",
+    "firebase/firestore": "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js",
+    "firebase/": "https://esm.sh/firebase@^12.7.0/"
   }
 }
 </script>
+<link rel="stylesheet" href="/index.css">
 </head>
 <body>
     <div id="root"></div>
-    <!-- โหลด entry point โดยใช้ Relative Path เพื่อรองรับ GitHub Pages -->
-    <script type="module" src="./index.tsx"></script>
+<script type="module" src="/index.tsx"></script>
 </body>
 </html>

@@ -8,7 +8,10 @@ import Register from './pages/Register';
 import StudentHome from './pages/StudentHome';
 import ParentHome from './pages/ParentHome';
 import AdminDashboard from './pages/AdminDashboard';
+import CardCollection from './pages/CardCollection';
+import Shop from './pages/Shop';
 import Navbar from './components/Navbar';
+import Sidebar from './components/Sidebar';
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -43,39 +46,61 @@ const App: React.FC = () => {
 
   return (
     <Router>
-      <div className="min-h-screen flex flex-col bg-transparent">
-        {user && <Navbar user={user} viewMode={viewMode} onLogout={handleLogout} />}
-        <main className="flex-grow container mx-auto px-4 py-6">
-          <Routes>
-            <Route path="/" element={<Landing />} />
-            <Route path="/login" element={<Login onLogin={handleLogin} />} />
-            <Route path="/register" element={<Register onLogin={handleLogin} />} />
-            
-            <Route 
-              path="/home" 
-              element={
-                user ? (
-                  user.role === UserRole.ADMIN ? <Navigate to="/admin" /> : 
-                  viewMode === 'parent' ? <ParentHome user={user} /> : <StudentHome user={user} />
-                ) : <Navigate to="/login" />
-              } 
-            />
-            
-            <Route 
-              path="/admin" 
-              element={user && user.role === UserRole.ADMIN ? <AdminDashboard /> : <Navigate to="/login" />} 
-            />
-          </Routes>
-        </main>
+      <div className="min-h-screen flex bg-transparent overflow-x-hidden relative">
+        {user && (
+          <Sidebar 
+            user={user} 
+            viewMode={viewMode} 
+            onLogout={handleLogout} 
+          />
+        )}
         
-        <footer className="bg-white/60 backdrop-blur-md p-6 text-center text-xs text-slate-500 mt-auto border-t border-white/20">
-          <div className="flex justify-center gap-4 mb-2">
-            <span className="bg-blue-100/50 text-blue-600 px-2 py-1 rounded">#EduTech</span>
-            <span className="bg-pink-100/50 text-pink-600 px-2 py-1 rounded">#KidsHealth</span>
-            <span className="bg-emerald-100/50 text-emerald-600 px-2 py-1 rounded">#SEL</span>
-          </div>
-          <p className="font-bold drop-shadow-sm">KidsHealthyMe v1.2 | นวัตกรรมเพื่อการวิจัยเทคโนโลยีการศึกษา</p>
-        </footer>
+        <div className={`flex-grow flex flex-col min-w-0 transition-all duration-700 ${user ? 'lg:pl-[100px]' : ''}`}>
+          {user && <Navbar user={user} viewMode={viewMode} onLogout={handleLogout} />}
+          
+          <main className={`flex-grow container mx-auto px-6 py-10 ${!user ? 'max-w-6xl' : ''}`}>
+            <Routes>
+              <Route path="/" element={<Landing />} />
+              <Route path="/login" element={<Login onLogin={handleLogin} />} />
+              <Route path="/register" element={<Register onLogin={handleLogin} />} />
+              
+              <Route 
+                path="/home" 
+                element={
+                  user ? (
+                    user.role === UserRole.ADMIN ? <Navigate to="/admin" /> : 
+                    viewMode === 'parent' ? <ParentHome user={user} /> : <StudentHome user={user} />
+                  ) : <Navigate to="/login" />
+                } 
+              />
+
+              <Route 
+                path="/cards" 
+                element={user ? <CardCollection user={user} /> : <Navigate to="/login" />} 
+              />
+
+              <Route 
+                path="/shop" 
+                element={user ? <Shop user={user} /> : <Navigate to="/login" />} 
+              />
+              
+              <Route 
+                path="/admin" 
+                element={user && user.role === UserRole.ADMIN ? <AdminDashboard /> : <Navigate to="/login" />} 
+              />
+              <Route path="*" element={<Navigate to="/home" />} />
+            </Routes>
+          </main>
+          
+          <footer className="bg-white/40 backdrop-blur-md p-10 text-center text-[11px] text-slate-400 mt-auto border-t border-white/20">
+            <div className="flex justify-center gap-8 mb-6 opacity-60 grayscale hover:grayscale-0 transition-all">
+              <span className="bg-blue-100 text-blue-600 px-4 py-1.5 rounded-full font-black">#AI_EDUTECH</span>
+              <span className="bg-pink-100 text-pink-600 px-4 py-1.5 rounded-full font-black">#WELLBEING</span>
+              <span className="bg-emerald-100 text-emerald-600 px-4 py-1.5 rounded-full font-black">#RESEARCH</span>
+            </div>
+            <p className="font-black tracking-[0.3em] uppercase">KidsHealthyMe v1.5 | Designed for Science & Happiness</p>
+          </footer>
+        </div>
       </div>
     </Router>
   );
