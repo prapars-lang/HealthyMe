@@ -3,8 +3,9 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { dbService } from '../services/dbService';
 import { getClassReport, getAICoachFeedback } from '../geminiService';
 import { HealthLog, ShopReward, RedemptionRecord } from '../types';
+import { EMOJI_POOL } from '../constants';
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, AreaChart, Area, Cell, PieChart, Pie, Legend, CartesianGrid } from 'recharts';
-import { Users, Activity, TrendingUp, RefreshCw, ShoppingBag, Brain, Search, BarChart3, Package, Check, Database, User as UserIcon, Heart, Plus, Edit2, Trash2, X, Ticket } from 'lucide-react';
+import { Users, Activity, TrendingUp, RefreshCw, ShoppingBag, Brain, Search, BarChart3, Package, Check, Database, User as UserIcon, Heart, Plus, Edit2, Trash2, X, Ticket, Smile } from 'lucide-react';
 import Swal from 'sweetalert2';
 
 const AdminDashboard: React.FC = () => {
@@ -128,6 +129,9 @@ const AdminDashboard: React.FC = () => {
     }).sort((a, b) => new Date(b.claimed_at).getTime() - new Date(a.claimed_at).getTime());
   }, [redemptions, redemptionSearch, leaderboard]);
 
+  // Emoji selection grid for reward icon
+  const rewardEmojis = [...EMOJI_POOL.rewards, ...EMOJI_POOL.food];
+
   if (loading) return <div className="p-20 text-center"><RefreshCw className="animate-spin mx-auto text-blue-500 mb-4" size={48}/><p className="font-black text-blue-600 uppercase tracking-widest">กำลังประมวลผล Big Data...</p></div>;
 
   return (
@@ -206,7 +210,7 @@ const AdminDashboard: React.FC = () => {
              <div className="flex justify-between items-center mb-8">
                 <h3 className="text-2xl font-black text-slate-800 flex items-center gap-3"><Package className="text-amber-500" /> คลังสินค้าในร้านค้า</h3>
                 <button 
-                  onClick={() => { setEditingReward({}); setShowRewardModal(true); }}
+                  onClick={() => { setEditingReward({ icon: '🎁', cost: 50, stock: 10 }); setShowRewardModal(true); }}
                   className="bg-amber-500 text-white px-6 py-3 rounded-2xl font-black flex items-center gap-2 shadow-lg hover:scale-105 active:scale-95 transition-all"
                 >
                   <Plus size={20} /> เพิ่มสินค้าใหม่
@@ -325,63 +329,82 @@ const AdminDashboard: React.FC = () => {
       {/* Modal: Reward Editor */}
       {showRewardModal && editingReward && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in">
-           <form onSubmit={handleSaveReward} className="bg-white rounded-[3.5rem] w-full max-w-xl p-10 shadow-2xl animate-in zoom-in">
+           <form onSubmit={handleSaveReward} className="bg-white rounded-[3.5rem] w-full max-w-2xl p-10 shadow-2xl animate-in zoom-in max-h-[90vh] overflow-y-auto no-scrollbar">
               <div className="flex justify-between items-center mb-8">
                  <h3 className="text-2xl font-black text-slate-800 flex items-center gap-3"><Edit2 className="text-amber-500" /> {editingReward.id ? 'แก้ไขข้อมูลรางวัล' : 'เพิ่มรางวัลใหม่'}</h3>
                  <button type="button" onClick={() => setShowRewardModal(false)} className="p-2 bg-slate-100 rounded-full text-slate-400 hover:bg-slate-200"><X /></button>
               </div>
               
-              <div className="grid grid-cols-2 gap-6">
-                 <div className="col-span-full">
-                    <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">ชื่อของรางวัล</label>
-                    <input 
-                      type="text" 
-                      required
-                      className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-amber-100 font-bold transition-all"
-                      value={editingReward.title || ''}
-                      onChange={e => setEditingReward({...editingReward, title: e.target.value})}
-                    />
-                 </div>
-                 <div>
-                    <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">ไอคอน (Emoji)</label>
-                    <input 
-                      type="text" 
-                      required
-                      className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-amber-100 font-bold text-center text-3xl transition-all"
-                      value={editingReward.icon || ''}
-                      onChange={e => setEditingReward({...editingReward, icon: e.target.value})}
-                      placeholder="เช่น 🍎"
-                    />
-                 </div>
-                 <div className="flex gap-4">
-                    <div className="flex-1">
-                       <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">ราคา (Coins)</label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                 <div className="space-y-6">
+                    <div>
+                       <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">ชื่อของรางวัล</label>
                        <input 
-                         type="number" 
+                         type="text" 
                          required
                          className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-amber-100 font-bold transition-all"
-                         value={editingReward.cost || ''}
-                         onChange={e => setEditingReward({...editingReward, cost: Number(e.target.value)})}
+                         value={editingReward.title || ''}
+                         onChange={e => setEditingReward({...editingReward, title: e.target.value})}
+                         placeholder="เช่น สติ๊กเกอร์ฮีโร่"
                        />
                     </div>
-                    <div className="flex-1">
-                       <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">สต็อก</label>
-                       <input 
-                         type="number" 
-                         required
-                         className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-amber-100 font-bold transition-all"
-                         value={editingReward.stock || ''}
-                         onChange={e => setEditingReward({...editingReward, stock: Number(e.target.value)})}
+                    <div className="flex gap-4">
+                       <div className="flex-1">
+                          <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">ราคา (Coins)</label>
+                          <input 
+                            type="number" 
+                            required
+                            className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-amber-100 font-bold transition-all"
+                            value={editingReward.cost || ''}
+                            onChange={e => setEditingReward({...editingReward, cost: Number(e.target.value)})}
+                          />
+                       </div>
+                       <div className="flex-1">
+                          <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">สต็อก</label>
+                          <input 
+                            type="number" 
+                            required
+                            className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-amber-100 font-bold transition-all"
+                            value={editingReward.stock || ''}
+                            onChange={e => setEditingReward({...editingReward, stock: Number(e.target.value)})}
+                          />
+                       </div>
+                    </div>
+                    <div>
+                       <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">คำอธิบาย</label>
+                       <textarea 
+                         className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-amber-100 font-bold h-32 transition-all resize-none"
+                         value={editingReward.description || ''}
+                         onChange={e => setEditingReward({...editingReward, description: e.target.value})}
+                         placeholder="ระบุเงื่อนไขการแลกรางวัล..."
                        />
                     </div>
                  </div>
-                 <div className="col-span-full">
-                    <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">คำอธิบาย</label>
-                    <textarea 
-                      className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-amber-100 font-bold h-24 transition-all"
-                      value={editingReward.description || ''}
-                      onChange={e => setEditingReward({...editingReward, description: e.target.value})}
-                    />
+
+                 <div className="space-y-6">
+                    <div>
+                       <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">เลือกไอคอน (Emoji)</label>
+                       <div className="bg-slate-50 p-4 rounded-3xl border border-slate-100">
+                          <div className="flex items-center gap-4 mb-4">
+                             <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center text-4xl shadow-sm border border-slate-200 shrink-0">
+                                {editingReward.icon || '🎁'}
+                             </div>
+                             <div className="text-xs font-bold text-slate-400 italic">เลือกไอคอนที่เหมาะสมกับของรางวัลเพื่อให้เด็กๆ ตื่นเต้น!</div>
+                          </div>
+                          <div className="grid grid-cols-4 gap-2 max-h-48 overflow-y-auto no-scrollbar p-1">
+                             {rewardEmojis.map((emoji, idx) => (
+                                <button
+                                   key={idx}
+                                   type="button"
+                                   onClick={() => setEditingReward({...editingReward, icon: emoji})}
+                                   className={`aspect-square rounded-xl flex items-center justify-center text-2xl transition-all hover:scale-110 ${editingReward.icon === emoji ? 'bg-amber-500 text-white shadow-lg scale-110' : 'bg-white border border-slate-100 hover:bg-amber-50'}`}
+                                >
+                                   {emoji}
+                                </button>
+                             ))}
+                          </div>
+                       </div>
+                    </div>
                  </div>
               </div>
 
