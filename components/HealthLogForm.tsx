@@ -27,7 +27,6 @@ const HealthLogForm: React.FC<HealthLogFormProps> = ({ userId, onSave, onCancel,
     height: 140,
     weight: 35,
     bmi: 17.8,
-    // Fix: Added steps and vegetable_score to initial state for HealthLog
     steps: 6000,
     vegetable_score: 8
   });
@@ -74,6 +73,7 @@ const HealthLogForm: React.FC<HealthLogFormProps> = ({ userId, onSave, onCancel,
     onSave({
       ...formData,
       user_id: userId,
+      date: new Date().toISOString(), // สำคัญ: ส่งวันที่ปัจจุบันไปเก็บใน Firebase เพื่อใช้ Analytics
       sleep_hours: calculateSleepHours()
     });
   };
@@ -193,7 +193,6 @@ const HealthLogForm: React.FC<HealthLogFormProps> = ({ userId, onSave, onCancel,
               </div>
             </section>
 
-            {/* Added Steps Input */}
             <section className="space-y-4">
               <h3 className="font-black text-slate-800 text-lg flex items-center gap-2">👣 ก้าวเดินวันนี้</h3>
               <div className="bg-slate-50 p-4 rounded-3xl border border-slate-100">
@@ -208,7 +207,6 @@ const HealthLogForm: React.FC<HealthLogFormProps> = ({ userId, onSave, onCancel,
               </div>
             </section>
 
-            {/* Added Vegetable Score Input */}
             <section className="space-y-4">
               <h3 className="font-black text-slate-800 text-lg flex items-center gap-2">🥦 คะแนนการกินผัก (0-10)</h3>
               <div className="flex items-center gap-4 bg-emerald-50 p-6 rounded-[2rem] border-2 border-emerald-100">

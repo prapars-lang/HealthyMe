@@ -1,8 +1,7 @@
 
 import React from 'react';
 import { User, UserRole } from '../types';
-import { Home, LogOut, Settings, Award, Users, Heart } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Bell, Award, Heart, Sparkles, Shield, Trophy } from 'lucide-react';
 
 interface NavbarProps {
   user: User;
@@ -12,42 +11,45 @@ interface NavbarProps {
 
 const Navbar: React.FC<NavbarProps> = ({ user, viewMode, onLogout }) => {
   return (
-    <nav className="bg-white/80 backdrop-blur-md shadow-sm border-b border-blue-50 sticky top-0 z-50 px-6 py-4 flex justify-between items-center">
-      <Link to="/" className="flex items-center gap-3">
-        <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-lg transform hover:rotate-3 transition-transform border border-slate-100 p-1.5">
-          <img 
-            src="https://img5.pic.in.th/file/secure-sv1/-4c31bfe664e96786c.png" 
-            alt="KidsHealthyMe Logo" 
-            className="w-full h-full object-contain"
-          />
-        </div>
-        <div>
-          <span className="font-black text-slate-800 text-lg leading-none block">KidsHealthyMe</span>
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{viewMode === 'parent' ? 'Parent Insight' : 'Hero Journey'}</span>
-        </div>
-      </Link>
-      
-      <div className="flex items-center gap-4">
-        {user.role === UserRole.STUDENT && (
-          <div className={`flex items-center gap-2 ${viewMode === 'parent' ? 'bg-pink-50 text-pink-600' : 'bg-blue-50 text-blue-600'} px-4 py-2 rounded-2xl text-xs font-black shadow-sm`}>
-            {viewMode === 'parent' ? <Heart size={14} /> : <Award size={14} />}
-            <span>{viewMode === 'parent' ? 'โหมดผู้ปกครอง' : 'โหมดนักเรียน'}</span>
+    <nav className="px-6 md:px-10 py-6 flex flex-col md:flex-row justify-between items-center sticky top-0 z-[40] bg-transparent gap-4">
+      {/* Brand & Heroic Tagline Section */}
+      <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8 w-full md:w-auto">
+        {/* Title Group */}
+        <div className="flex items-center gap-3 bg-white/60 backdrop-blur-md px-5 py-2.5 rounded-2xl border border-white shadow-sm">
+          <div className={`p-2 rounded-xl ${viewMode === 'parent' ? 'bg-pink-100 text-pink-500' : user.role === UserRole.ADMIN ? 'bg-emerald-100 text-emerald-500' : 'bg-blue-100 text-blue-500'}`}>
+            {viewMode === 'parent' ? <Heart size={18} /> : user.role === UserRole.ADMIN ? <Shield size={18} /> : <Trophy size={18} />}
           </div>
-        )}
-        
-        {user.role === UserRole.ADMIN && (
-          <div className="flex items-center gap-2 bg-emerald-50 text-emerald-600 px-4 py-2 rounded-2xl text-xs font-black shadow-sm">
-            <Users size={14} />
-            <span>ครูผู้ดูแล</span>
-          </div>
-        )}
+          <h2 className="font-black text-slate-800 text-sm md:text-base tracking-tight leading-none whitespace-nowrap">
+            {viewMode === 'parent' ? 'Family Insights' : user.role === UserRole.ADMIN ? 'Research Control' : 'Hero Journey'}
+          </h2>
+        </div>
 
-        <button 
-          onClick={onLogout}
-          className="p-3 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all active:scale-90"
-          title="ออกจากระบบ"
-        >
-          <LogOut size={22} />
+        {/* SINGLE ROW TAGLINE - BOLD & HEROIC */}
+        <div className="flex items-center gap-3 overflow-hidden">
+          <div className="hidden lg:block h-[2px] w-8 bg-gradient-to-r from-blue-500/30 to-transparent rounded-full"></div>
+          <p className="text-base md:text-lg font-black italic tracking-wide whitespace-nowrap text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-500 to-blue-400 drop-shadow-sm">
+            สุขภาพที่ดี เริ่มต้นที่ความสนุก!
+          </p>
+        </div>
+      </div>
+      
+      {/* Action Stats */}
+      <div className="flex items-center gap-4">
+        <div className="hidden sm:flex bg-white/60 backdrop-blur-xl border border-white/80 px-6 py-2.5 rounded-[1.5rem] shadow-sm items-center gap-5">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Village Active</span>
+          </div>
+          <div className="h-4 w-[1px] bg-slate-200"></div>
+          <div className="flex items-center gap-2 text-indigo-600">
+            <Sparkles size={12} className="animate-spin" style={{ animationDuration: '4s' }} />
+            <span className="text-[10px] font-black uppercase tracking-widest">AI Synchronized</span>
+          </div>
+        </div>
+
+        <button className="p-3.5 bg-white shadow-md border border-slate-50 rounded-2xl text-slate-400 hover:text-blue-500 transition-all relative group active:scale-90">
+          <Bell size={20} />
+          <span className="absolute top-3 right-3 w-2 h-2 bg-rose-500 rounded-full border-2 border-white group-hover:animate-ping"></span>
         </button>
       </div>
     </nav>
